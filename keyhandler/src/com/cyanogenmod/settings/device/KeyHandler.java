@@ -239,6 +239,14 @@ public class KeyHandler implements DeviceKeyHandler {
         }
     }
 
+
+
+    private boolean hasSetupCompleted() {
+        return Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.USER_SETUP_COMPLETE, 0) != 0;
+    }
+
+
     public KeyEvent handleKeyEvent(KeyEvent event) {
         int scanCode = event.getScanCode();
         boolean isKeySupported = ArrayUtils.contains(sSupportedGestures, scanCode);
@@ -275,7 +283,7 @@ public class KeyHandler implements DeviceKeyHandler {
 		    mVibrator.vibrate(40);
 		}
             }
-        } else if (!mEventHandler.hasMessages(GESTURE_REQUEST)) {
+        } else if (isKeySupported && !mEventHandler.hasMessages(GESTURE_REQUEST)) {
             Message msg = getMessageForKeyEvent(scanCode);	     
             if (scanCode < MODE_TOTAL_SILENCE && mProximitySensor != null) {
                 mEventHandler.sendMessageDelayed(msg, mProximityTimeOut);
@@ -284,7 +292,7 @@ public class KeyHandler implements DeviceKeyHandler {
                 mEventHandler.sendMessage(msg);
             }
         }
-        return null;
+        return event;
     }
 
     private Message getMessageForKeyEvent(int scancode) {
